@@ -15,13 +15,19 @@ function latexify() {
     "\\paragraph{",
     DocumentApp.ParagraphHeading.HEADING4
   ];
+  
+  const protectedbegins = [
+    "document",
+    "itemize",
+    "APAitemize",
+    ];
 
   const protectedcommands = [
     "abstract",
     "abstracttext",
     "affiliation",
     "author",
-    "being{abstract}",
+    "item",
     "journal",
     "keywords",
     "note",
@@ -39,9 +45,9 @@ function latexify() {
     "textsl",
     "texttt",
     "textup",
-    "title"
+    "title",
   ];
-
+  
   const body = DocumentApp.getActiveDocument().getBody();
   const paragraphs = body.getParagraphs();
 
@@ -67,7 +73,7 @@ function latexify() {
       var beginmatches = beginre.exec(str);
       if (beginmatches) {
         var name = beginmatches[1];
-        if (name != "document") {
+        if (protectedbegins.indexOf(name) == -1) {
           beginname = name;
         }
       }
@@ -77,14 +83,7 @@ function latexify() {
 
     var command = false;
     if (str.indexOf(command_marker) == 0) {
-      command = true;
-      for (var i = 0; i < protectedcommands.length; i++) {
-        var pc = protectedcommands[i];
-        if (str.indexOf(pc) == 1) {
-          command = false;
-          break;
-        }
-      }
+      command = !protectedcommands.some(function(pc){return str.indexOf(pc) == 1});
     }
 
     if (beginname || note || command) {
